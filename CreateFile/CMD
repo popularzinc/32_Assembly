@@ -1,0 +1,2 @@
+nasm -fwin32 main.asm
+i686-w64-mingw32-g++ -o main.exe main.obj
