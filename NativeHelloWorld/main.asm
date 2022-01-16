@@ -1,30 +1,39 @@
 global _main
-extern  _GetStdHandle@4
-extern  _WriteFile@20
-extern  _ExitProcess@4
 
-section .text
-_main:
+extern  _GetStdHandle@4           ; GetStdHandle Windows API Function
+extern  _WriteFile@20             ; WriteFile Windows API Function
+extern  _ExitProcess@4            ; ExitProcess Windows API Function
 
-mov     ebp, esp
-sub     esp, 4
+section .data
+  msg  db  "Hello World!",10,0    ; define msg string
+  msg_len  equ  $-msg             ; length of msg string
 
-push    -11
-call    _GetStdHandle@4
-mov     ebx, eax
+section .text                     ; text section
+_main:                            ; main function
 
-push    0
-lea     eax, [ebp-4]
-push    eax
-push    (message_end - message)
-push    message
-push    ebx
-call    _WriteFile@20
+;    HANDLE WINAPI GetStdHandle(
+;      _In_ DWORD nStdHandle
+;    );
+
+  push    -11                     ; push -11 to top of stack STD_OUTPUT_HANDLE
+  call    _GetStdHandle@4         ; Call GetStdHandle function
+  mov     ebx, eax                ; Output put in eax register, move to ebx register
 
 
-push    0
-call    _ExitProcess@4
+;    BOOL WriteFile(
+;      [in]                HANDLE       hFile,
+;      [in]                LPCVOID      lpBuffer,
+;      [in]                DWORD        nNumberOfBytesToWrite,
+;      [out, optional]     LPDWORD      lpNumberOfBytesWritten,
+;      [in, out, optional] LPOVERLAPPED lpOverlapped
+;    );
 
-message:
-db      'Hello, World', 10
-message_end:
+  push    0                       ; lpOverlapped paramater, NULL to ignore
+  push    0                       ; lpNumberOfBytesWritten, NULL to ignore
+  push    msg_len                 ; nNumberOfBytesToWrite, give length of string to be printed
+  push    msg                     ; msg string to be printed
+  push    ebx                     ; ebx has the output of GetStdHandle function,
+  call    _WriteFile@20           ; Call function
+
+  push    0                       ; close process cleanly
+  call    _ExitProcess@4          ;
